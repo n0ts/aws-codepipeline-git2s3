@@ -7,8 +7,11 @@
 
 import boto3
 from botocore.vendored import requests
+import StringIO
 import json
 import logging
+import os
+import zipfile
 
 verify = True
 
@@ -23,6 +26,7 @@ def lambda_handler(event, context):
     OAUTH_token = event['context']['git-token']
     OutputBucket = event['context']['output-bucket']
     temp_archive = '/tmp/archive.zip'
+
     # Identify git host flavour
     hostflavour = 'generic'
     if 'X-Hub-Signature' in event['params']['header'].keys():
@@ -32,6 +36,7 @@ def lambda_handler(event, context):
     elif 'User-Agent' in event['params']['header'].keys():
         if event['params']['header']['User-Agent'].startswith('Bitbucket-Webhooks'):
             hostflavour = 'bitbucket'
+
     headers = {}
     if hostflavour == 'githubent':
         archive_url = event['body-json']['repository']['archive_url']
@@ -55,12 +60,25 @@ def lambda_handler(event, context):
             logger.error('Could not get OAuth token. %s: %s' % (r.json()['error'], r.json()['error_description']))
             raise Exception('Failed to get OAuth token')
         headers['Authorization'] = 'Bearer ' + r.json()['access_token']
+
     s3_archive_file = "%s/%s/%s_%s.zip" % (owner, name, owner, name)
     # download the code archive via archive url
     logger.info('Downloading archive from %s' % archive_url)
     r = requests.get(archive_url, verify=verify, headers=headers)
-    with open(temp_archive, 'wb') as codearchive:
-        codearchive.write(r.content)
+
+    os.chdir('/tmp')
+    z = zipfile.ZipFile(StringIO.StringIO(r.content))
+    z.extractall()
+    z_rootdir = z.namelist()[0]
+    z.close()
+    os.chdir(z_rootdir)
+    z_new = zipfile.ZipFile(temp_archive, 'w')
+    for dirname, subdirs, files in os.walk('.'):
+        z_new.write(dirname)
+        for filename in files:
+            z_new.write(os.path.join(dirname, filename))
+    z_new.close()
+
     # upload the archive to s3 bucket
     logger.info("Uploading zip to S3://%s/%s" % (OutputBucket, s3_archive_file))
     s3_client.upload_file(temp_archive, OutputBucket, s3_archive_file)

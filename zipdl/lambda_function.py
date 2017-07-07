@@ -10,8 +10,7 @@ from botocore.vendored import requests
 import json
 import logging
 
-# Set to False to allow self-signed/invalid ssl certificates
-verify = False
+verify = True
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

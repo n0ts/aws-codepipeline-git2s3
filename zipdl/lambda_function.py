@@ -42,6 +42,7 @@ def lambda_handler(event, context):
         archive_url = event['body-json']['repository']['archive_url']
         owner = event['body-json']['repository']['owner']['name']
         name = event['body-json']['repository']['name']
+        branch = event['body-json']['ref'].replace('refs/heads/', '')
         # replace the code archive download and branch reference placeholders
         archive_url = archive_url.replace('{archive_format}', 'zipball').replace('{/ref}', '/master')
         # add access token information to archive url
@@ -51,17 +52,21 @@ def lambda_handler(event, context):
         archive_url = event['body-json']['project']['http_url'].replace('.git', '/repository/archive.zip?ref=master') + '&private_token=' + OAUTH_token
         owner = event['body-json']['project']['namespace']
         name = event['body-json']['project']['name']
+        ## TODO support branch
+        #branch =
     elif hostflavour == 'bitbucket':
         archive_url = event['body-json']['repository']['links']['html']['href'] + '/get/master.zip'
         owner = event['body-json']['repository']['owner']['username']
         name = event['body-json']['repository']['name']
+        ## TODO support branch
+        #branch = 
         r = requests.post('https://bitbucket.org/site/oauth2/access_token', data = {'grant_type':'client_credentials'}, auth=(event['context']['oauth-key'], event['context']['oauth-secret']))
         if 'error' in r.json().keys():
             logger.error('Could not get OAuth token. %s: %s' % (r.json()['error'], r.json()['error_description']))
             raise Exception('Failed to get OAuth token')
         headers['Authorization'] = 'Bearer ' + r.json()['access_token']
 
-    s3_archive_file = "%s/%s/%s_%s.zip" % (owner, name, owner, name)
+    s3_archive_file = "%s/%s/%s_%s_%s.zip" % (owner, name, owner, name, branch)
     # download the code archive via archive url
     logger.info('Downloading archive from %s' % archive_url)
     r = requests.get(archive_url, verify=verify, headers=headers)

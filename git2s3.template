@@ -40,6 +40,11 @@
             "Type": "String",
             "Default": "",
             "ConstraintDescription": "this secret must be generated from the git server/provider"
+        },
+        "LambdaBucket": {
+            "Description": "lambda function s3 bucket",
+            "Type": "String",
+            "Default": ""
         }
     },
     "Mappings": {
@@ -364,15 +369,9 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Fn::FindInMap": [
-                            "LambdaBuckets",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "Name"
-                        ]
+                        "Ref": "LambdaBucket"
                     },
-                    "S3Key": "v1.0/CreateSSHKey.zip"
+                    "S3Key": "CreateSSHKey.zip"
                 }
             }
         },
@@ -505,15 +504,9 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Fn::FindInMap": [
-                            "LambdaBuckets",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "Name"
-                        ]
+                        "Ref": "LambdaBucket"
                     },
-                    "S3Key": "v1.0/DeleteBucketContents.zip"
+                    "S3Key": "DeleteBucketContents.zip"
                 }
             }
         },
@@ -653,15 +646,9 @@
                 "Timeout": "300",
                 "Code": {
                     "S3Bucket": {
-                        "Fn::FindInMap": [
-                            "LambdaBuckets",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "Name"
-                        ]
+                        "Ref": "LambdaBucket"
                     },
-                    "S3Key": "v1.0/GitPullS3.zip"
+                    "S3Key": "GitPull.zip"
                 }
             }
         },
@@ -749,15 +736,9 @@
                 },
                 "Code": {
                     "S3Bucket": {
-                        "Fn::FindInMap": [
-                            "LambdaBuckets",
-                            {
-                                "Ref": "AWS::Region"
-                            },
-                            "Name"
-                        ]
+                        "Ref": "LambdaBucket"
                     },
-                    "S3Key": "v1.0/ZipDl.zip"
+                    "S3Key": "ZipDl.zip"
                 },
                 "Runtime": "python2.7",
                 "MemorySize": 128,

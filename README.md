@@ -5,19 +5,19 @@
 ## How to a AWS CloudFormation stack via aws-cli
 
 1. Set AWS environtment variables for aws-cli
-   ```
+    ```
 $ export AWS_ACCESS_KEY_ID=<ACCESS KEY>
 $ export AWS_SECRET_ACCESS_KEY=<SECRET KEY>
 $ export AWS_DEFAULT_REGION=<REGION>
-   ```
+    ```
 
 2. Create the AWS CloudFormation stack. <BUCKET> must be unique name.
-   ```
+    ```
 $ ./create.sh <BUCKET>
   {
     "StackId": "arn:aws:cloudformation:<REGION>:<ACCOUNT ID>:stack/Git2CodePipeline/<STACK ID>"
   }
-   ```
+    ```
 
 ### for GitHub Enterprise
 
